@@ -1,6 +1,7 @@
 package com.darkhorse.ticketbooking.order.controller;
 
 import com.darkhorse.ticketbooking.order.common.CommonResponse;
+import com.darkhorse.ticketbooking.order.constants.Message;
 import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestControllerDTO;
 import com.darkhorse.ticketbooking.order.exception.OrderException;
 import com.darkhorse.ticketbooking.order.service.OrderService;
@@ -40,8 +41,9 @@ public class OrderController {
     }
 
     private ResponseEntity<CommonResponse> buildErrorResponse(OrderException exception) {
+        int status = Message.LOCK_SEAT_FAILED.equals(exception.getCode()) ? 409 : 500;
         return ResponseEntity
-                .status(409)
+                .status(status)
                 .body(CommonResponse.failed(exception.getMessage()));
     }
 }

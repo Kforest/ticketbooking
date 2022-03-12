@@ -38,46 +38,51 @@ class OrderControllerTest {
 
     @Test
     void should_return_success_when_create_order_given_create_order_success_in_service() throws Exception {
-        final OrderCreateRequestControllerDTO request = OrderCreateRequestControllerDTO
-                .builder()
-                .passengers(List.of(PassengerControllerDTO.builder()
-                        .name("passenger1")
-                        .idCardNumber("passenger1")
-                        .build()))
-                .build();
-        String requestBody = JSONUtils.objectToString(request);
-
         Mockito.when(orderService.createOrder(eq("id-success-flight"), any(OrderCreateRequestControllerDTO.class)))
                         .thenReturn(true);
-
         mvc.perform(post("/flights/id-success-flight/order")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                        .content(JSONUtils.objectToString(prepareOrderCreateRequest())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code", is("SUCCESS")))
                 .andExpect(jsonPath("$.message", is("Order Created!")));
     }
 
     @Test
-    void should_return_failure_when_create_order_given_create_order_failed_in_service() throws Exception {
-        final OrderCreateRequestControllerDTO request = OrderCreateRequestControllerDTO
+    void should_return_failure_when_create_order_given_no_available_seats_to_book() throws Exception {
+        Mockito.when(orderService.createOrder(anyString(), any(OrderCreateRequestControllerDTO.class)))
+                        .thenThrow(new OrderException(SeatBookingCode.NO_MORE_SEAT.name(), Message.LOCK_SEAT_FAILED));
+
+        mvc.perform(post("/flights/id-lock-seat-failed-flight/order")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSONUtils.objectToString(prepareOrderCreateRequest())))
+                .andExpect(status().is(409))
+                .andExpect(jsonPath("$.code", is("FAILED")))
+                .andExpect(jsonPath("$.message", is(Message.LOCK_SEAT_FAILED)));
+    }
+
+    @Test
+    void should_return_failure_when_create_order_given_seat_book_service_down() throws Exception {
+
+        Mockito.when(orderService.createOrder(anyString(), any(OrderCreateRequestControllerDTO.class)))
+                        .thenThrow(new OrderException(Message.SEAT_LOCK_ERROR, Message.SEAT_LOCK_ERROR_DETAIL));
+
+        mvc.perform(post("/flights/id-lock-seat-failed-flight/order")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSONUtils.objectToString(prepareOrderCreateRequest())))
+                .andExpect(status().is(500))
+                .andExpect(jsonPath("$.code", is("FAILED")))
+                .andExpect(jsonPath("$.message", is(Message.SEAT_LOCK_ERROR_DETAIL)));
+    }
+
+    private OrderCreateRequestControllerDTO prepareOrderCreateRequest() {
+        return OrderCreateRequestControllerDTO
                 .builder()
                 .passengers(List.of(PassengerControllerDTO.builder()
                         .name("passenger1")
                         .idCardNumber("passenger1")
                         .build()))
                 .build();
-        String requestBody = JSONUtils.objectToString(request);
-
-        Mockito.when(orderService.createOrder(anyString(), any(OrderCreateRequestControllerDTO.class)))
-                        .thenThrow(new OrderException(SeatBookingCode.NO_MORE_SEAT.name(), Message.LOCK_SEAT_FAILED));
-
-        mvc.perform(post("/flights/id-lock-seat-failed-flight/order")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().is(409))
-                .andExpect(jsonPath("$.code", is("FAILED")))
-                .andExpect(jsonPath("$.message", is("Locking seat failed.")));
     }
 
 }
