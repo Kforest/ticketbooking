@@ -1,7 +1,9 @@
 package com.darkhorse.ticketbooking.order.service;
 
+import com.darkhorse.ticketbooking.order.constants.Message;
 import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestControllerDTO;
 import com.darkhorse.ticketbooking.order.controller.dto.PassengerControllerDTO;
+import com.darkhorse.ticketbooking.order.exception.OrderException;
 import com.darkhorse.ticketbooking.order.model.Passenger;
 import com.darkhorse.ticketbooking.order.repository.OrderRepository;
 import com.darkhorse.ticketbooking.order.service.contants.FlightReportCode;
@@ -23,7 +25,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,6 +72,22 @@ class OrderServiceTest {
 
         //when
         assertTrue(orderService.createOrder("id-success-flight", prepareOrderCreateRequestDTO()));
+    }
+
+    @Test
+    void should_throw_exception_when_create_order_given_book_seat_failed_due_unavailable_seat() {
+        //given
+        //stub seat booking
+        Mockito.when(seatBookingGateway.bookSeat(any(SeatBookingRequestDTO.class)))
+                .thenReturn(new SeatBookingResponseDTO(SeatBookingCode.NO_MORE_SEAT));
+        //when
+        OrderException orderException = assertThrows(OrderException.class, () -> orderService.createOrder("id-lock-seat-failed-flight", prepareOrderCreateRequestDTO()));
+        assertEquals(SeatBookingCode.NO_MORE_SEAT.name(), orderException.getCode());
+        assertEquals(Message.LOCK_SEAT_FAILED, orderException.getMessage());
+
+        //then
+        Mockito.verify(orderRepository, Mockito.never()).createOrder(any(Order.class));
+        Mockito.verify(flightReportGateway, Mockito.never()).reportFlight(any(FlightReportRequestDTO.class));
     }
 
     private OrderCreateRequestControllerDTO prepareOrderCreateRequestDTO() {
