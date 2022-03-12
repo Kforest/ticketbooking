@@ -52,7 +52,7 @@ class OrderServiceTest {
         Mockito.when(seatBookingGateway.bookSeat(eq(seatBookingRequestDTO)))
                 .thenReturn(new SeatBookingResponseDTO(SeatBookingCode.SUCCESS));
         //stub order create
-        Order toBeSavedOrder = prepareOrder("", "id-success-flight", OrderStatus.DRAFT);
+        Order toBeSavedOrder = prepareOrder(null, "id-success-flight", OrderStatus.UNPAID);
         Order unPaidOrder = prepareOrder("orderId", "id-success-flight", OrderStatus.UNPAID);
         Mockito.when(orderRepository.createOrder(eq(toBeSavedOrder)))
                 .thenReturn(unPaidOrder);

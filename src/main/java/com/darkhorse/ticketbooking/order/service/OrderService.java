@@ -47,9 +47,8 @@ public class OrderService {
 
     private Order buildDraftOrder(String flightId, OrderCreateRequestControllerDTO request) {
         return Order.builder()
-                .id("")
                 .flightId(flightId)
-                .orderStatus(OrderStatus.DRAFT)
+                .orderStatus(OrderStatus.UNPAID)
                 .passengers(request.buildPassengers())
                 .build();
     }
