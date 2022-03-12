@@ -4,6 +4,8 @@ import com.darkhorse.ticketbooking.order.constants.Message;
 import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestControllerDTO;
 import com.darkhorse.ticketbooking.order.controller.dto.PassengerControllerDTO;
 import com.darkhorse.ticketbooking.order.exception.OrderException;
+import com.darkhorse.ticketbooking.order.messagequeue.FlightReportMessage;
+import com.darkhorse.ticketbooking.order.messagequeue.FlightReportQueue;
 import com.darkhorse.ticketbooking.order.model.Passenger;
 import com.darkhorse.ticketbooking.order.repository.OrderRepository;
 import com.darkhorse.ticketbooking.order.service.contants.FlightReportCode;
@@ -47,6 +49,9 @@ class OrderServiceTest {
     @Mock
     FlightReportGateway flightReportGateway;
 
+    @Mock
+    FlightReportQueue flightReportQueue;
+
     @Test
     void should_return_true_when_create_order_given_book_seat_ok_and_create_order_ok_and_report_order_ok() {
         //given
@@ -73,6 +78,28 @@ class OrderServiceTest {
 
         //when
         assertTrue(orderService.createOrder("id-success-flight", prepareOrderCreateRequestDTO()));
+    }
+
+    @Test
+    void should_return_true_and_send_message_to_queue_when_create_order_given_book_seat_ok_and_create_order_ok_but_report_order_is_down() {
+        //given
+        //stub seat booking
+        Mockito.when(seatBookingGateway.bookSeat(any(SeatBookingRequestDTO.class)))
+                .thenReturn(new SeatBookingResponseDTO(SeatBookingCode.SUCCESS));
+        //stub order create
+        Order unPaidOrder = prepareOrder("orderId", "id-report-exception-flight", OrderStatus.UNPAID);
+        Mockito.when(orderRepository.createOrder(any(Order.class))).thenReturn(unPaidOrder);
+        //stub order report
+        Mockito.when(flightReportGateway.reportFlight(any(FlightReportRequestDTO.class)))
+                .thenThrow(new RuntimeException());
+        //when
+        assertTrue(orderService.createOrder("id-report-exception-flight", prepareOrderCreateRequestDTO()));
+        FlightReportMessage flightReportMessage = FlightReportMessage.builder()
+                .flightId("id-report-exception-flight")
+                .orderId("orderId")
+                .orderStatus(OrderStatus.UNPAID.name())
+                .build();
+        Mockito.verify(flightReportQueue, Mockito.times(1)).sendFlightReport(eq(flightReportMessage));
     }
 
     @Test

@@ -8,28 +8,35 @@ import com.darkhorse.ticketbooking.order.gateway.SeatBookingGateway;
 import com.darkhorse.ticketbooking.order.gateway.dto.FlightReportRequestDTO;
 import com.darkhorse.ticketbooking.order.gateway.dto.SeatBookingRequestDTO;
 import com.darkhorse.ticketbooking.order.gateway.dto.SeatBookingResponseDTO;
+import com.darkhorse.ticketbooking.order.messagequeue.FlightReportMessage;
+import com.darkhorse.ticketbooking.order.messagequeue.FlightReportQueue;
 import com.darkhorse.ticketbooking.order.model.Order;
 import com.darkhorse.ticketbooking.order.model.OrderStatus;
 import com.darkhorse.ticketbooking.order.repository.OrderRepository;
 import com.darkhorse.ticketbooking.order.service.contants.SeatBookingCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
-    public static final boolean SUCCESS = true;
     private final SeatBookingGateway seatBookingGateway;
 
     private final OrderRepository orderRepository;
 
     private final FlightReportGateway flightReportGateway;
 
+    private final FlightReportQueue flightReportQueue;
+
+    private static final boolean SUCCESS = true;
+
     public boolean createOrder(String flightId, OrderCreateRequestControllerDTO request) {
         tryBookSeat(flightId, request);
         Order createdOrder = orderRepository.createOrder(buildDraftOrder(flightId, request));
-        reportFlightData(flightId, createdOrder);
+        tryReportFlightData(flightId, createdOrder);
         return SUCCESS;
     }
 
@@ -39,21 +46,35 @@ public class OrderService {
             responseDTO = seatBookingGateway
                     .bookSeat(new SeatBookingRequestDTO(flightId, request.buildPassengerIdCardNumbers()));
         } catch (Exception exception) {
+            log.error("Unable to communicate with seat book service. Terminate order creation process.");
+            log.error(exception.getMessage(), exception);
             throw new OrderException(Message.SEAT_LOCK_ERROR, Message.SEAT_LOCK_ERROR_DETAIL);
         }
         if (SeatBookingCode.NO_MORE_SEAT.equals(responseDTO.getCode())) {
+            log.error("Not able to book seat due to no more seat available.");
             throw new OrderException(responseDTO.getCode().name(), Message.LOCK_SEAT_FAILED);
         }
     }
 
-    private void reportFlightData(String flightId, Order createdOrder) {
-        FlightReportRequestDTO reportRequestDTO = FlightReportRequestDTO.builder()
-                .orderId(createdOrder.getId())
-                .newFlightId(flightId)
-                .orderStatus(createdOrder.getOrderStatus().name())
-                .build();
-        flightReportGateway.reportFlight(reportRequestDTO);
-    }
+    private void tryReportFlightData(String flightId, Order createdOrder) {
+        try {
+            FlightReportRequestDTO reportRequestDTO = FlightReportRequestDTO.builder()
+                    .orderId(createdOrder.getId())
+                    .newFlightId(flightId)
+                    .orderStatus(createdOrder.getOrderStatus().name())
+                    .build();
+            flightReportGateway.reportFlight(reportRequestDTO);
+        } catch (Exception exception) {
+            log.error("Failed to report directly. Turn report request to message.");
+            FlightReportMessage message = FlightReportMessage.builder()
+                    .flightId(flightId)
+                    .orderId(createdOrder.getId())
+                    .orderStatus(createdOrder.getOrderStatus().name())
+                    .build();
+            flightReportQueue.sendFlightReport(message);
+        }
+
+     }
 
     private Order buildDraftOrder(String flightId, OrderCreateRequestControllerDTO request) {
         return Order.builder()
