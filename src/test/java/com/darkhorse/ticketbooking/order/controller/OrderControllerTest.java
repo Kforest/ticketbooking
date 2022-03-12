@@ -67,7 +67,7 @@ class OrderControllerTest {
         Mockito.when(orderService.createOrder(anyString(), any(OrderCreateRequestControllerDTO.class)))
                         .thenThrow(new OrderException(Message.SEAT_LOCK_ERROR, Message.SEAT_LOCK_ERROR_DETAIL));
 
-        mvc.perform(post("/flights/id-lock-seat-failed-flight/order")
+        mvc.perform(post("/flights/id-lock-seat-exception-flight/order")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JSONUtils.objectToString(prepareOrderCreateRequest())))
                 .andExpect(status().is(500))

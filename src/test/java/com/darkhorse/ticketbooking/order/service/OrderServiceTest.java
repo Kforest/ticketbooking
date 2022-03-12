@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
@@ -81,10 +82,24 @@ class OrderServiceTest {
         Mockito.when(seatBookingGateway.bookSeat(any(SeatBookingRequestDTO.class)))
                 .thenReturn(new SeatBookingResponseDTO(SeatBookingCode.NO_MORE_SEAT));
         //when
-        OrderException orderException = assertThrows(OrderException.class, () -> orderService.createOrder("id-lock-seat-failed-flight", prepareOrderCreateRequestDTO()));
+        OrderException orderException = assertThrows(OrderException.class, () -> orderService.createOrder(anyString(), prepareOrderCreateRequestDTO()));
         assertEquals(SeatBookingCode.NO_MORE_SEAT.name(), orderException.getCode());
         assertEquals(Message.LOCK_SEAT_FAILED, orderException.getMessage());
 
+        //then
+        Mockito.verify(orderRepository, Mockito.never()).createOrder(any(Order.class));
+        Mockito.verify(flightReportGateway, Mockito.never()).reportFlight(any(FlightReportRequestDTO.class));
+    }
+
+    @Test
+    void should_throw_exception_when_create_order_given_book_seat_service_is_down() {
+        //given
+        //stub seat booking
+        Mockito.when(seatBookingGateway.bookSeat(any(SeatBookingRequestDTO.class))).thenThrow(new RuntimeException());
+        //when
+        OrderException orderException = assertThrows(OrderException.class, () -> orderService.createOrder(anyString(), prepareOrderCreateRequestDTO()));
+        assertEquals(Message.SEAT_LOCK_ERROR, orderException.getCode());
+        assertEquals(Message.SEAT_LOCK_ERROR_DETAIL, orderException.getMessage());
         //then
         Mockito.verify(orderRepository, Mockito.never()).createOrder(any(Order.class));
         Mockito.verify(flightReportGateway, Mockito.never()).reportFlight(any(FlightReportRequestDTO.class));

@@ -14,6 +14,6 @@ import java.util.List;
 @Builder
 @EqualsAndHashCode
 public class SeatBookingRequestDTO {
-    private List<String> idCardNumbers;
     private String flightId;
+    private List<String> idCardNumbers;
 }

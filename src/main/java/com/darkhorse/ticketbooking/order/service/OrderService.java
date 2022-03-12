@@ -34,11 +34,13 @@ public class OrderService {
     }
 
     private void tryBookSeat(String flightId, OrderCreateRequestControllerDTO request) {
-        SeatBookingRequestDTO seatBookingRequestDTO = SeatBookingRequestDTO.builder()
-                .flightId(flightId)
-                .idCardNumbers(request.buildPassengerIdCardNumbers())
-                .build();
-        SeatBookingResponseDTO responseDTO = seatBookingGateway.bookSeat(seatBookingRequestDTO);
+        SeatBookingResponseDTO responseDTO;
+        try {
+            responseDTO = seatBookingGateway
+                    .bookSeat(new SeatBookingRequestDTO(flightId, request.buildPassengerIdCardNumbers()));
+        } catch (Exception exception) {
+            throw new OrderException(Message.SEAT_LOCK_ERROR, Message.SEAT_LOCK_ERROR_DETAIL);
+        }
         if (SeatBookingCode.NO_MORE_SEAT.equals(responseDTO.getCode())) {
             throw new OrderException(responseDTO.getCode().name(), Message.LOCK_SEAT_FAILED);
         }
