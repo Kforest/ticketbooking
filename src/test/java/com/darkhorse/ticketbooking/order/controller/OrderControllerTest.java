@@ -40,7 +40,7 @@ class OrderControllerTest {
                         .idCardNumber("passenger1")
                         .build()))
                 .build();
-        String requestBody = JSONUtils.getRequestBody(request);
+        String requestBody = JSONUtils.objectToString(request);
 
         Mockito.when(orderService.createOrder(eq("id-success-flight"), any(OrderCreateRequestControllerDTO.class)))
                         .thenReturn(true);

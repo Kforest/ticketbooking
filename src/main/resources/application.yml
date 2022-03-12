@@ -34,5 +34,9 @@ server:
   port: 8080
   tomcat:
     use-relative-redirects: true
+
 thirdparty:
   url: http://localhost:8090/thirdparty
+
+seatBooking:
+  url: http://localhost:8081/

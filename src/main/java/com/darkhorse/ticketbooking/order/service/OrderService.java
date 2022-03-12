@@ -7,6 +7,7 @@ import com.darkhorse.ticketbooking.order.gateway.dto.FlightReportRequestDTO;
 import com.darkhorse.ticketbooking.order.gateway.dto.SeatBookingRequestDTO;
 import com.darkhorse.ticketbooking.order.model.Order;
 import com.darkhorse.ticketbooking.order.model.OrderStatus;
+import com.darkhorse.ticketbooking.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
