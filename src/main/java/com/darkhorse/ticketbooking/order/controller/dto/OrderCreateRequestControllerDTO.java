@@ -1,11 +1,13 @@
 package com.darkhorse.ticketbooking.order.controller.dto;
 
+import com.darkhorse.ticketbooking.order.model.Passenger;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,4 +15,16 @@ import java.util.List;
 @Data
 public class OrderCreateRequestControllerDTO {
     private List<PassengerControllerDTO> passengers;
+
+    public List<Passenger> buildPassengers() {
+        return this.passengers.stream()
+                .map(dto -> new Passenger(dto.getName(), dto.getIdCardNumber()))
+                .collect(Collectors.toList());
+    }
+
+    public List<String> buildPassengerIdCardNumbers() {
+        return this.passengers.stream()
+                .map(PassengerControllerDTO::getIdCardNumber)
+                .collect(Collectors.toList());
+    }
 }
