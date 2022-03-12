@@ -40,3 +40,6 @@ thirdparty:
 
 seatBooking:
   url: http://localhost:8081/
+
+flightReport:
+  url: http://localhost:8082/
