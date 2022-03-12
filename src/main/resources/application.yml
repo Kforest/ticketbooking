@@ -1,0 +1,38 @@
+spring:
+  jpa:
+    database: SQLSERVER
+    show-sql: false
+    dialect: org.hibernate.dialect.SQLServer2012Dialect
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  datasource:
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
+    platform: sqlserver
+    url: jdbc:sqlserver://localhost:1433;databaseName=ticket_booking
+    username: SA
+    password: A_Str0ng_Required_Password
+    driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  flyway:
+    table: ticket_booking_flyway_schema_history
+    enabled: true
+    out-of-order: true
+    url: jdbc:sqlserver://localhost:1433;databaseName=ticket_booking
+    username: SA
+    password: A_Str0ng_Required_Password
+    placeholder-replacement: false
+    baselineOnMigrate: true
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+server:
+  port: 8080
+  tomcat:
+    use-relative-redirects: true
+thirdparty:
+  url: http://localhost:8090/thirdparty
