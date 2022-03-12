@@ -1,7 +1,7 @@
 package com.darkhorse.ticketbooking.order.gateway;
 
 import com.darkhorse.ticketbooking.base.BaseContainerTest;
-import com.darkhorse.ticketbooking.order.controller.JSONUtils;
+import com.darkhorse.ticketbooking.common.JSONUtils;
 import com.darkhorse.ticketbooking.order.gateway.dto.FlightReportRequestDTO;
 import com.darkhorse.ticketbooking.order.gateway.dto.FlightReportResponseDTO;
 import com.darkhorse.ticketbooking.order.service.contants.FlightReportCode;

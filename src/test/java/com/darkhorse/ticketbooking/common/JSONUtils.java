@@ -1,4 +1,4 @@
-package com.darkhorse.ticketbooking.order.controller;
+package com.darkhorse.ticketbooking.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

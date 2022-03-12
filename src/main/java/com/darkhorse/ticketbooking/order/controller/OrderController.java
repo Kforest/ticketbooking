@@ -27,7 +27,6 @@ public class OrderController {
             @PathVariable("flightId") String flightId,
             @RequestBody OrderCreateRequestControllerDTO request
     ) {
-
         boolean order = orderService.createOrder(flightId, request);
         if (order) {
             return ResponseEntity.ok(CommonResponse.buildBy("SUCCESS", "Order Created!"));
