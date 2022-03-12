@@ -1,9 +1,12 @@
 package com.darkhorse.ticketbooking.order.controller;
 
 import com.darkhorse.ticketbooking.common.JSONUtils;
+import com.darkhorse.ticketbooking.order.constants.Message;
 import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestControllerDTO;
 import com.darkhorse.ticketbooking.order.controller.dto.PassengerControllerDTO;
+import com.darkhorse.ticketbooking.order.exception.OrderException;
 import com.darkhorse.ticketbooking.order.service.OrderService;
+import com.darkhorse.ticketbooking.order.service.contants.SeatBookingCode;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -52,6 +56,28 @@ class OrderControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code", is("SUCCESS")))
                 .andExpect(jsonPath("$.message", is("Order Created!")));
+    }
+
+    @Test
+    void should_return_failure_when_create_order_given_create_order_failed_in_service() throws Exception {
+        final OrderCreateRequestControllerDTO request = OrderCreateRequestControllerDTO
+                .builder()
+                .passengers(List.of(PassengerControllerDTO.builder()
+                        .name("passenger1")
+                        .idCardNumber("passenger1")
+                        .build()))
+                .build();
+        String requestBody = JSONUtils.objectToString(request);
+
+        Mockito.when(orderService.createOrder(anyString(), any(OrderCreateRequestControllerDTO.class)))
+                        .thenThrow(new OrderException(SeatBookingCode.NO_MORE_SEAT.name(), Message.LOCK_SEAT_FAILED));
+
+        mvc.perform(post("/flights/id-lock-seat-failed-flight/order")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(status().is(409))
+                .andExpect(jsonPath("$.code", is("FAILED")))
+                .andExpect(jsonPath("$.message", is("Locking seat failed.")));
     }
 
 }

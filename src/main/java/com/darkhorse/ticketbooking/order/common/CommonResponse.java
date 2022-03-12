@@ -10,7 +10,16 @@ import lombok.NoArgsConstructor;
 public class CommonResponse {
     private String code;
     private String message;
-    public static CommonResponse buildBy(String code, String message) {
-        return new CommonResponse(code, message);
+
+    private static final String SUCCESS = "SUCCESS";
+    private static final String FAILED = "FAILED";
+    private static final String SUCCESS_MESSAGE = "Order Created!";
+
+    public static CommonResponse failed(String message) {
+        return new CommonResponse(FAILED, message);
+    }
+
+    public static CommonResponse success(String message) {
+        return new CommonResponse(SUCCESS, message);
     }
 }

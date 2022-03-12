@@ -2,6 +2,7 @@ package com.darkhorse.ticketbooking.order.controller;
 
 import com.darkhorse.ticketbooking.order.common.CommonResponse;
 import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestControllerDTO;
+import com.darkhorse.ticketbooking.order.exception.OrderException;
 import com.darkhorse.ticketbooking.order.service.OrderService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,10 +28,20 @@ public class OrderController {
             @PathVariable("flightId") String flightId,
             @RequestBody OrderCreateRequestControllerDTO request
     ) {
-        boolean order = orderService.createOrder(flightId, request);
-        if (order) {
-            return ResponseEntity.ok(CommonResponse.buildBy("SUCCESS", "Order Created!"));
+        try {
+            boolean order = orderService.createOrder(flightId, request);
+            if (order) {
+                return ResponseEntity.ok(CommonResponse.success("Order Created!"));
+            }
+        } catch (OrderException exception) {
+            return buildErrorResponse(exception);
         }
         return null;
+    }
+
+    private ResponseEntity<CommonResponse> buildErrorResponse(OrderException exception) {
+        return ResponseEntity
+                .status(409)
+                .body(CommonResponse.failed(exception.getMessage()));
     }
 }
