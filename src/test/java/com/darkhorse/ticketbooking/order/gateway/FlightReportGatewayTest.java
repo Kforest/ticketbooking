@@ -1,10 +1,10 @@
 package com.darkhorse.ticketbooking.order.gateway;
 
 import com.darkhorse.ticketbooking.base.BaseContainerTest;
-import com.darkhorse.ticketbooking.common.JSONUtils;
+import com.darkhorse.ticketbooking.order.gateway.dto.FlightReportCode;
 import com.darkhorse.ticketbooking.order.gateway.dto.FlightReportRequestDTO;
 import com.darkhorse.ticketbooking.order.gateway.dto.FlightReportResponseDTO;
-import com.darkhorse.ticketbooking.order.gateway.dto.FlightReportCode;
+import com.darkhorse.ticketbooking.order.utils.JSONUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;

@@ -1,12 +1,12 @@
 package com.darkhorse.ticketbooking.order.controller;
 
-import com.darkhorse.ticketbooking.common.JSONUtils;
 import com.darkhorse.ticketbooking.order.constants.Message;
 import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestDTO;
 import com.darkhorse.ticketbooking.order.controller.dto.PassengerRequestDTO;
 import com.darkhorse.ticketbooking.order.exception.NoAvailableSeatException;
 import com.darkhorse.ticketbooking.order.exception.SeatBookServiceUnavailableException;
 import com.darkhorse.ticketbooking.order.service.OrderService;
+import com.darkhorse.ticketbooking.order.utils.JSONUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
