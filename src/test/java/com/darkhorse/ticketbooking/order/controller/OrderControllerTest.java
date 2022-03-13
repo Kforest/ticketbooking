@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,7 +46,8 @@ class OrderControllerTest {
                         .content(JSONUtils.objectToString(prepareOrderCreateRequest())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code", is("SUCCESS")))
-                .andExpect(jsonPath("$.message", is("Order Created!")));
+                .andExpect(jsonPath("$.message", is("Order Created!")))
+                .andDo(print());
     }
 
     @Test
@@ -58,7 +60,8 @@ class OrderControllerTest {
                         .content(JSONUtils.objectToString(prepareOrderCreateRequest())))
                 .andExpect(status().is(409))
                 .andExpect(jsonPath("$.code", is("FAILED")))
-                .andExpect(jsonPath("$.message", is(Message.LOCK_SEAT_FAILED)));
+                .andExpect(jsonPath("$.message", is(Message.LOCK_SEAT_FAILED)))
+                .andDo(print());
     }
 
     @Test
@@ -72,7 +75,8 @@ class OrderControllerTest {
                         .content(JSONUtils.objectToString(prepareOrderCreateRequest())))
                 .andExpect(status().is(500))
                 .andExpect(jsonPath("$.code", is("FAILED")))
-                .andExpect(jsonPath("$.message", is(Message.SEAT_LOCK_ERROR_DETAIL)));
+                .andExpect(jsonPath("$.message", is(Message.SEAT_LOCK_ERROR_DETAIL)))
+                .andDo(print());
     }
 
     private OrderCreateRequestDTO prepareOrderCreateRequest() {
