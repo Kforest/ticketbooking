@@ -2,6 +2,7 @@ package com.darkhorse.ticketbooking.order.service;
 
 import com.darkhorse.ticketbooking.order.constants.Message;
 import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestDTO;
+import com.darkhorse.ticketbooking.order.exception.ClientException;
 import com.darkhorse.ticketbooking.order.exception.NoAvailableSeatException;
 import com.darkhorse.ticketbooking.order.exception.SeatBookServiceUnavailableException;
 import com.darkhorse.ticketbooking.order.gateway.FlightReportGateway;
@@ -46,7 +47,7 @@ public class OrderService {
         try {
             responseDTO = seatBookingGateway
                     .bookSeat(new SeatBookingRequestDTO(flightId, request.buildPassengerIdCardNumbers()));
-        } catch (Exception exception) {
+        } catch (ClientException exception) {
             log.error("Unable to communicate with seat book service. Terminate order creation process.");
             log.error(exception.getMessage(), exception);
             throw new SeatBookServiceUnavailableException(Message.SEAT_LOCK_ERROR_DETAIL);

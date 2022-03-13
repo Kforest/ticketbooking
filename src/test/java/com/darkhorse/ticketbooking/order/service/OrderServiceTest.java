@@ -3,6 +3,7 @@ package com.darkhorse.ticketbooking.order.service;
 import com.darkhorse.ticketbooking.order.constants.Message;
 import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestDTO;
 import com.darkhorse.ticketbooking.order.controller.dto.PassengerRequestDTO;
+import com.darkhorse.ticketbooking.order.exception.ClientException;
 import com.darkhorse.ticketbooking.order.exception.NoAvailableSeatException;
 import com.darkhorse.ticketbooking.order.exception.SeatBookServiceUnavailableException;
 import com.darkhorse.ticketbooking.order.gateway.FlightReportGateway;
@@ -122,7 +123,7 @@ class OrderServiceTest {
     void should_throw_exception_when_create_order_given_book_seat_service_is_down() {
         //given
         //stub seat booking
-        Mockito.when(seatBookingGateway.bookSeat(any(SeatBookingRequestDTO.class))).thenThrow(new RuntimeException("Unknown Exception."));
+        Mockito.when(seatBookingGateway.bookSeat(any(SeatBookingRequestDTO.class))).thenThrow(new ClientException());
         //when
         SeatBookServiceUnavailableException orderException = assertThrows(SeatBookServiceUnavailableException.class, () -> orderService.createOrder(anyString(), prepareOrderCreateRequestDTO()));
         assertEquals(Message.SEAT_LOCK_ERROR_DETAIL, orderException.getMessage());
