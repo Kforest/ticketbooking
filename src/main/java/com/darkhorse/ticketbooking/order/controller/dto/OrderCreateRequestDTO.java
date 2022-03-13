@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Builder
 @Data
-public class OrderCreateRequestControllerDTO {
-    private List<PassengerControllerDTO> passengers;
+public class OrderCreateRequestDTO {
+    private List<PassengerRequestDTO> passengers;
 
     public List<Passenger> buildPassengers() {
         return this.passengers.stream()
@@ -24,7 +24,7 @@ public class OrderCreateRequestControllerDTO {
 
     public List<String> buildPassengerIdCardNumbers() {
         return this.passengers.stream()
-                .map(PassengerControllerDTO::getIdCardNumber)
+                .map(PassengerRequestDTO::getIdCardNumber)
                 .collect(Collectors.toList());
     }
 }

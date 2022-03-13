@@ -1,4 +1,4 @@
-package com.darkhorse.ticketbooking.order.common;
+package com.darkhorse.ticketbooking.order.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommonResponse {
+public class CommonResponseDTO {
     private String code;
     private String message;
 
@@ -15,11 +15,11 @@ public class CommonResponse {
     private static final String FAILED = "FAILED";
     private static final String SUCCESS_MESSAGE = "Order Created!";
 
-    public static CommonResponse failed(String message) {
-        return new CommonResponse(FAILED, message);
+    public static CommonResponseDTO failed(String message) {
+        return new CommonResponseDTO(FAILED, message);
     }
 
-    public static CommonResponse success(String message) {
-        return new CommonResponse(SUCCESS, message);
+    public static CommonResponseDTO success(String message) {
+        return new CommonResponseDTO(SUCCESS, message);
     }
 }

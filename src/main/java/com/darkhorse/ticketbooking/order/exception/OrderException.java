@@ -7,12 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
-public final class OrderException extends RuntimeException {
-
-    private final String code;
-
-    public OrderException(String code, String message) {
+public class OrderException extends RuntimeException {
+    public OrderException(String message) {
         super(message);
-        this.code = code;
     }
 }

@@ -1,4 +1,4 @@
-package com.darkhorse.ticketbooking.order.messagequeue;
+package com.darkhorse.ticketbooking.order.messagequeue.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

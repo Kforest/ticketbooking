@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Data
-public class PassengerControllerDTO {
+public class PassengerRequestDTO {
     private String name;
     private String idCardNumber;
 }

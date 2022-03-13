@@ -1,4 +1,4 @@
-package com.darkhorse.ticketbooking.order.service.contants;
+package com.darkhorse.ticketbooking.order.gateway.dto;
 
 public enum SeatBookingCode {
     SUCCESS,

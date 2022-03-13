@@ -1,13 +1,14 @@
 package com.darkhorse.ticketbooking.order.controller;
 
-import com.darkhorse.ticketbooking.order.common.CommonResponse;
-import com.darkhorse.ticketbooking.order.constants.Message;
-import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestControllerDTO;
+import com.darkhorse.ticketbooking.order.controller.dto.CommonResponseDTO;
+import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestDTO;
+import com.darkhorse.ticketbooking.order.exception.NoAvailableSeatException;
 import com.darkhorse.ticketbooking.order.exception.OrderException;
 import com.darkhorse.ticketbooking.order.service.OrderService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
+import org.springframework.cloud.contract.spec.internal.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,14 +26,13 @@ public class OrderController {
 
     @ApiOperation(value = "create order")
     @PostMapping(value = "/flights/{flightId}/order")
-    public ResponseEntity<CommonResponse> createGreeting(
+    public ResponseEntity<CommonResponseDTO> createGreeting(
             @PathVariable("flightId") String flightId,
-            @RequestBody OrderCreateRequestControllerDTO request
+            @RequestBody OrderCreateRequestDTO request
     ) {
         try {
-            boolean order = orderService.createOrder(flightId, request);
-            if (order) {
-                return ResponseEntity.ok(CommonResponse.success("Order Created!"));
+            if (orderService.createOrder(flightId, request)) {
+                return ResponseEntity.ok(CommonResponseDTO.success("Order Created!"));
             }
         } catch (OrderException exception) {
             return buildErrorResponse(exception);
@@ -40,10 +40,13 @@ public class OrderController {
         return null;
     }
 
-    private ResponseEntity<CommonResponse> buildErrorResponse(OrderException exception) {
-        int status = Message.LOCK_SEAT_FAILED.equals(exception.getCode()) ? 409 : 500;
-        return ResponseEntity
-                .status(status)
-                .body(CommonResponse.failed(exception.getMessage()));
+    private ResponseEntity<CommonResponseDTO> buildErrorResponse(OrderException exception) {
+        if (exception instanceof NoAvailableSeatException) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(CommonResponseDTO.failed(exception.getMessage()));
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(CommonResponseDTO.failed(exception.getMessage()));
+        }
     }
 }

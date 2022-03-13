@@ -2,11 +2,11 @@ package com.darkhorse.ticketbooking.order.controller;
 
 import com.darkhorse.ticketbooking.common.JSONUtils;
 import com.darkhorse.ticketbooking.order.constants.Message;
-import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestControllerDTO;
-import com.darkhorse.ticketbooking.order.controller.dto.PassengerControllerDTO;
-import com.darkhorse.ticketbooking.order.exception.OrderException;
+import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestDTO;
+import com.darkhorse.ticketbooking.order.controller.dto.PassengerRequestDTO;
+import com.darkhorse.ticketbooking.order.exception.NoAvailableSeatException;
+import com.darkhorse.ticketbooking.order.exception.SeatBookServiceUnavailableException;
 import com.darkhorse.ticketbooking.order.service.OrderService;
-import com.darkhorse.ticketbooking.order.service.contants.SeatBookingCode;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ class OrderControllerTest {
 
     @Test
     void should_return_success_when_create_order_given_create_order_success_in_service() throws Exception {
-        Mockito.when(orderService.createOrder(eq("id-success-flight"), any(OrderCreateRequestControllerDTO.class)))
+        Mockito.when(orderService.createOrder(eq("id-success-flight"), any(OrderCreateRequestDTO.class)))
                         .thenReturn(true);
         mvc.perform(post("/flights/id-success-flight/order")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -50,8 +50,8 @@ class OrderControllerTest {
 
     @Test
     void should_return_failure_when_create_order_given_no_available_seats_to_book() throws Exception {
-        Mockito.when(orderService.createOrder(anyString(), any(OrderCreateRequestControllerDTO.class)))
-                        .thenThrow(new OrderException(SeatBookingCode.NO_MORE_SEAT.name(), Message.LOCK_SEAT_FAILED));
+        Mockito.when(orderService.createOrder(anyString(), any(OrderCreateRequestDTO.class)))
+                        .thenThrow(new NoAvailableSeatException(Message.LOCK_SEAT_FAILED));
 
         mvc.perform(post("/flights/id-lock-seat-failed-flight/order")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -64,8 +64,8 @@ class OrderControllerTest {
     @Test
     void should_return_failure_when_create_order_given_seat_book_service_down() throws Exception {
 
-        Mockito.when(orderService.createOrder(anyString(), any(OrderCreateRequestControllerDTO.class)))
-                        .thenThrow(new OrderException(Message.SEAT_LOCK_ERROR, Message.SEAT_LOCK_ERROR_DETAIL));
+        Mockito.when(orderService.createOrder(anyString(), any(OrderCreateRequestDTO.class)))
+                        .thenThrow(new SeatBookServiceUnavailableException(Message.SEAT_LOCK_ERROR_DETAIL));
 
         mvc.perform(post("/flights/id-lock-seat-exception-flight/order")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -75,10 +75,10 @@ class OrderControllerTest {
                 .andExpect(jsonPath("$.message", is(Message.SEAT_LOCK_ERROR_DETAIL)));
     }
 
-    private OrderCreateRequestControllerDTO prepareOrderCreateRequest() {
-        return OrderCreateRequestControllerDTO
+    private OrderCreateRequestDTO prepareOrderCreateRequest() {
+        return OrderCreateRequestDTO
                 .builder()
-                .passengers(List.of(PassengerControllerDTO.builder()
+                .passengers(List.of(PassengerRequestDTO.builder()
                         .name("passenger1")
                         .idCardNumber("passenger1")
                         .build()))

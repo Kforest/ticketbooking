@@ -1,19 +1,20 @@
 package com.darkhorse.ticketbooking.order.service;
 
 import com.darkhorse.ticketbooking.order.constants.Message;
-import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestControllerDTO;
-import com.darkhorse.ticketbooking.order.exception.OrderException;
+import com.darkhorse.ticketbooking.order.controller.dto.OrderCreateRequestDTO;
+import com.darkhorse.ticketbooking.order.exception.NoAvailableSeatException;
+import com.darkhorse.ticketbooking.order.exception.SeatBookServiceUnavailableException;
 import com.darkhorse.ticketbooking.order.gateway.FlightReportGateway;
 import com.darkhorse.ticketbooking.order.gateway.SeatBookingGateway;
 import com.darkhorse.ticketbooking.order.gateway.dto.FlightReportRequestDTO;
 import com.darkhorse.ticketbooking.order.gateway.dto.SeatBookingRequestDTO;
 import com.darkhorse.ticketbooking.order.gateway.dto.SeatBookingResponseDTO;
-import com.darkhorse.ticketbooking.order.messagequeue.FlightReportMessage;
+import com.darkhorse.ticketbooking.order.messagequeue.dto.FlightReportMessage;
 import com.darkhorse.ticketbooking.order.messagequeue.FlightReportQueue;
 import com.darkhorse.ticketbooking.order.model.Order;
 import com.darkhorse.ticketbooking.order.model.OrderStatus;
 import com.darkhorse.ticketbooking.order.repository.OrderRepository;
-import com.darkhorse.ticketbooking.order.service.contants.SeatBookingCode;
+import com.darkhorse.ticketbooking.order.gateway.dto.SeatBookingCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,14 +34,14 @@ public class OrderService {
 
     private static final boolean SUCCESS = true;
 
-    public boolean createOrder(String flightId, OrderCreateRequestControllerDTO request) {
+    public boolean createOrder(String flightId, OrderCreateRequestDTO request) {
         tryBookSeat(flightId, request);
         Order createdOrder = orderRepository.createOrder(buildDraftOrder(flightId, request));
         tryReportFlightData(flightId, createdOrder);
         return SUCCESS;
     }
 
-    private void tryBookSeat(String flightId, OrderCreateRequestControllerDTO request) {
+    private void tryBookSeat(String flightId, OrderCreateRequestDTO request) {
         SeatBookingResponseDTO responseDTO;
         try {
             responseDTO = seatBookingGateway
@@ -48,11 +49,11 @@ public class OrderService {
         } catch (Exception exception) {
             log.error("Unable to communicate with seat book service. Terminate order creation process.");
             log.error(exception.getMessage(), exception);
-            throw new OrderException(Message.SEAT_LOCK_ERROR, Message.SEAT_LOCK_ERROR_DETAIL);
+            throw new SeatBookServiceUnavailableException(Message.SEAT_LOCK_ERROR_DETAIL);
         }
         if (SeatBookingCode.NO_MORE_SEAT.equals(responseDTO.getCode())) {
             log.error("Not able to book seat due to no more seat available.");
-            throw new OrderException(responseDTO.getCode().name(), Message.LOCK_SEAT_FAILED);
+            throw new NoAvailableSeatException(Message.LOCK_SEAT_FAILED);
         }
     }
 
@@ -76,7 +77,7 @@ public class OrderService {
 
      }
 
-    private Order buildDraftOrder(String flightId, OrderCreateRequestControllerDTO request) {
+    private Order buildDraftOrder(String flightId, OrderCreateRequestDTO request) {
         return Order.builder()
                 .flightId(flightId)
                 .orderStatus(OrderStatus.UNPAID)

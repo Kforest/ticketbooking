@@ -1,5 +1,6 @@
 package com.darkhorse.ticketbooking.order.messagequeue;
 
+import com.darkhorse.ticketbooking.order.messagequeue.dto.FlightReportMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,5 @@ public class FlightReportQueue {
         } catch (JsonProcessingException e) {
             log.error(e.getMessage(), e);
         }
-
     }
 }
