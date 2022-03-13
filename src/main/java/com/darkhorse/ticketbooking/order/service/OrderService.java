@@ -20,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class OrderService {
 
     private static final boolean SUCCESS = true;
 
+    @Transactional
     public boolean createOrder(String flightId, OrderCreateRequestDTO request) {
         tryBookSeat(flightId, request);
         Order createdOrder = orderRepository.createOrder(buildDraftOrder(flightId, request));
@@ -66,7 +69,7 @@ public class OrderService {
                     .orderStatus(createdOrder.getOrderStatus().name())
                     .build();
             flightReportGateway.reportFlight(reportRequestDTO);
-        } catch (Exception exception) {
+        } catch (ClientException exception) {
             log.error("Failed to report directly. Turn report request to message.");
             FlightReportMessage message = FlightReportMessage.builder()
                     .flightId(flightId)

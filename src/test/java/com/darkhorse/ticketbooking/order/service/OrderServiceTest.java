@@ -93,7 +93,7 @@ class OrderServiceTest {
         Mockito.when(orderRepository.createOrder(any(Order.class))).thenReturn(unPaidOrder);
         //stub order report
         Mockito.when(flightReportGateway.reportFlight(any(FlightReportRequestDTO.class)))
-                .thenThrow(new RuntimeException());
+                .thenThrow(new ClientException());
         //when
         assertTrue(orderService.createOrder("id-report-exception-flight", prepareOrderCreateRequestDTO()));
         FlightReportMessage flightReportMessage = FlightReportMessage.builder()
