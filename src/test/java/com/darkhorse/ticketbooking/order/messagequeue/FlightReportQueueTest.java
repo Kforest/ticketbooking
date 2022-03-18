@@ -1,24 +1,20 @@
 package com.darkhorse.ticketbooking.order.messagequeue;
 
+import com.darkhorse.ticketbooking.base.BaseContainerTest;
 import com.darkhorse.ticketbooking.order.messagequeue.dto.FlightReportMessage;
+import com.darkhorse.ticketbooking.order.utils.JSONUtils;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ExtendWith(MockitoExtension.class)
-class FlightReportQueueTest {
+class FlightReportQueueTest extends BaseContainerTest {
 
-    @InjectMocks
+    @Autowired
     FlightReportQueue flightReportQueue;
 
-    @Mock
+    @Autowired
     RabbitTemplate rabbitTemplate;
 
     @Test
@@ -29,7 +25,9 @@ class FlightReportQueueTest {
                 .orderStatus("UNPAID")
                 .build();
         flightReportQueue.sendFlightReport(flightReportMessage);
-        Mockito.verify(rabbitTemplate, Mockito.times(1))
-                .convertAndSend(eq(QueueConfiguration.EXCHANGE_NAME), eq("order.created"), anyString());
+        rabbitTemplate.setExchange(QueueConfiguration.EXCHANGE_NAME);
+        Object order = rabbitTemplate.receiveAndConvert("order");
+        FlightReportMessage retrievedMessage = JSONUtils.stringToObject((String)order, FlightReportMessage.class);
+        assertEquals(flightReportMessage, retrievedMessage);
     }
 }

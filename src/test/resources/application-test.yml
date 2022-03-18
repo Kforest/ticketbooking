@@ -13,7 +13,10 @@ spring:
     placeholder-replacement: false
     baselineOnMigrate: true
   profiles:
-#    active: ${SPRING_PROFILES_ACTIVE:test}
+  rabbitmq:
+#    host: localhost
+    port: 5672
+  #    active: ${SPRING_PROFILES_ACTIVE:test}
   config:
     activate:
       on-profile: test

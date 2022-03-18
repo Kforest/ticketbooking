@@ -94,3 +94,7 @@ Demo repo for setting up baseline.
 ```shell
 ./gradlew build
 ```
+## Run
+* use postman mock server to fake flight report and seat booking service
+* start up colima
+* create sqlserver container and rabbitmq
